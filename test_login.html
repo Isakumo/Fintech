@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Test Demo Login - Axpress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;margin:0;padding:20px;background:#f8fafc}</style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col">
+  <div id="navbar"></div>
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-lg font-semibold mb-3">Demo Login Test</h2>
+    <div id="out" class="text-sm text-slate-700"></div>
+    <div class="mt-4">
+      <button id="run" class="px-3 py-2 bg-green-600 text-white rounded">Run Test</button>
+      <a href="login.html" class="ml-3 text-sm text-green-600">Open login page</a>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    loadComponent('components/navbar.html','#navbar');
+    async function runTest(){
+      const out = document.getElementById('out');
+      out.textContent = 'Checking demo email login...';
+      try{
+        // wait a short time for demo seed to complete
+        await new Promise(r=>setTimeout(r, 300));
+        const byEmail = await validateLogin('demo@axpress.test','demo1234');
+        const byPhone = await validateLogin('08000000000','demo1234');
+        out.innerHTML = '';
+        out.innerHTML += '<div>Email login: ' + (byEmail ? '<span style="color:green">SUCCESS</span>' : '<span style="color:red">FAIL</span>') + '</div>';
+        out.innerHTML += '<div>Phone login: ' + (byPhone ? '<span style="color:green">SUCCESS</span>' : '<span style="color:red">FAIL</span>') + '</div>';
+        if(byEmail) console.log('Demo account:', byEmail);
+      }catch(err){ out.textContent = 'Error: '+err.message }
+    }
+    document.getElementById('run').addEventListener('click', runTest);
+    // auto-run once
+    runTest();
+  </script>
+</body>
+</html>

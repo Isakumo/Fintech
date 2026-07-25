@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile - Axpress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div id="navbar"></div>
+  <main class="p-6 max-w-2xl mx-auto">
+    <h2 class="text-lg font-semibold mb-4">Profile</h2>
+    <div class="bg-white p-4 rounded shadow">
+      <div class="mb-2">Name: <span id="pname"></span></div>
+      <div class="mb-2">Email/Phone: <span id="pcontact"></span></div>
+      <div class="mt-4"><button id="logout" class="px-3 py-2 bg-red-500 text-white rounded">Logout</button></div>
+    </div>
+  </main>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      loadComponent('components/navbar.html','#navbar');
+      const u = JSON.parse(localStorage.getItem('ft_user')||'{}');
+      document.getElementById('pname').textContent = u.name || '-';
+      document.getElementById('pcontact').textContent = u.contact || '-';
+      document.getElementById('logout').addEventListener('click', ()=>{ localStorage.removeItem('ft_user'); location.href='login.html'; });
+    });
+  </script>
+</body>
+</html>

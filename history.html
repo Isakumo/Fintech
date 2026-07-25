@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>History - Axpress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div id="navbar"></div>
+  <main class="p-6 max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">Transaction History</h2>
+    </div>
+    <div class="mb-4 flex gap-2">
+      <input id="q" placeholder="Search" class="border rounded px-3 py-2 flex-1">
+      <input id="date" type="date" class="border rounded px-3 py-2">
+    </div>
+    <div id="txList" class="space-y-3"></div>
+  </main>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      loadComponent('components/navbar.html','#navbar');
+      const all = [
+        { id: 'TRF-01', recipient: 'Amina Yusuf', bank: 'GTBank', account: '0123456789', amount: 15000, narration: 'Groceries', date: '2026-07-20 09:24', status: 'successful', type: 'debit' },
+        { id: 'TRF-02', recipient: 'Samuel Kola', bank: 'Access Bank', account: '0987654321', amount: 55000, narration: 'Salary', date: '2026-07-18 14:12', status: 'successful', type: 'credit' },
+        { id: 'TRF-03', recipient: 'Grace Nwankwo', bank: 'First Bank Of Nigeria', account: '1234509876', amount: 2300, narration: 'Airtime', date: '2026-07-15 16:40', status: 'successful', type: 'debit' },
+        { id: 'TRF-04', recipient: 'John Doe', bank: 'Zenith Bank', account: '1122334455', amount: 120000, narration: 'Rent', date: '2026-07-10 11:00', status: 'successful', type: 'debit' },
+        { id: 'TRF-05', recipient: 'Fatima Bello', bank: 'Guarantee Trust Bank', account: '5566778899', amount: 7200, narration: 'Dinner', date: '2026-07-06 19:30', status: 'successful', type: 'debit' },
+        { id: 'TRF-06', recipient: 'Musa Ahmed', bank: 'Kuda Bank', account: '6677889900', amount: 30000, narration: 'Freelance payment', date: '2026-07-04 10:20', status: 'successful', type: 'credit' },
+        { id: 'TRF-07', recipient: 'Kemi Ade', bank: 'FCMB', account: '3344556677', amount: 9500, narration: 'Data bundle', date: '2026-07-02 18:05', status: 'successful', type: 'debit' },
+        { id: 'TRF-08', recipient: 'Peter Obi', bank: 'Zenith Bank', account: '7788990011', amount: 45000, narration: 'Utility bill', date: '2026-06-28 09:50', status: 'successful', type: 'debit' },
+        { id: 'TRF-09', recipient: 'Event Sponsor', bank: 'Access Bank', account: '4455667788', amount: 150000, narration: 'Project funding', date: '2026-06-25 15:30', status: 'successful', type: 'credit' },
+        { id: 'TRF-10', recipient: 'Linda Chukwu', bank: 'First Bank Of Nigeria', account: '2233445566', amount: 12500, narration: 'Shopping', date: '2026-06-22 20:10', status: 'successful', type: 'debit' }
+      ];
+      const list = document.getElementById('txList');
+      function render(items){
+        list.innerHTML = '';
+        if(!items.length) list.innerHTML = '<div class="text-sm text-slate-500">No transactions found.</div>';
+        items.forEach(t=>{
+          const el = document.createElement('div');
+            el.className = 'bg-white p-3 rounded shadow flex justify-between items-center';
+            const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
+            el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
+          el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
+          list.appendChild(el);
+        });
+      }
+      render(all);
+      document.getElementById('q').addEventListener('input', e=> render(all.filter(a=> JSON.stringify(a).toLowerCase().includes(e.target.value.toLowerCase()))));
+      document.getElementById('date').addEventListener('change', e=> render(all.filter(a=> a.date && a.date.includes(e.target.value))));
+    });
+  </script>
+</body>
+</html>

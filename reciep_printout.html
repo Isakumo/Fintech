@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xpress Agent Receipt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .receipt-window {
+            width: 380px;
+            max-width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .window-header {
+            background-color: #f0f0f0;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #dcdcdc;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .header-dots {
+            display: flex;
+            gap: 4px;
+            margin-right: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .receipt-content {
+            flex-grow: 1;
+            padding: 16px 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            line-height: 1.05;
+            letter-spacing: 0.01em;
+        }
+
+        /* Adjust content for narrower 80mm width when printing */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+                display: block;
+            }
+            .receipt-window {
+                width: 90mm;
+                height: 200mm;
+                margin: 0 auto;
+                box-shadow: none;
+                border-radius: 0;
+                border: none;
+                page-break-after: always;
+            }
+            .window-header { display: none; }
+            .print-button,
+            button.print-button {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            .receipt-content {
+                padding: 4mm 4mm 3mm;
+                min-height: 200mm;
+                box-sizing: border-box;
+            }
+            .title-logo, .title-text {
+                font-size: 11pt;
+            }
+            .section-data {
+                font-size: 8.5pt;
+            }
+            .divider {
+                font-size: 8pt;
+                margin: 0px 0;
+            }
+            .data-item {
+                margin-bottom: 1.5px;
+            }
+            .data-item .label, .data-item .value {
+                font-size: 8pt;
+            }
+            .bold-data .label, .bold-data .value {
+                font-size: 9pt;
+                font-weight: bold;
+            }
+            .status-line {
+                font-size: 9pt;
+                margin-bottom: 2px;
+            }
+            .amount-line {
+                font-size: 9pt;
+                margin-bottom: 1px;
+            }
+            .amount-line .naira-sign {
+                font-size: inherit;
+                font-weight: inherit;
+                line-height: inherit;
+                font-family: inherit;
+            }
+            .ad-line {
+                font-size: 7pt;
+                margin-bottom: 1px;
+            }
+            .footer-line {
+                font-size: 6.5pt;
+                margin-bottom: 1px;
+            }
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .divider {
+            color: #dcdcdc;
+            width: 100%;
+            text-align: center;
+            margin: 1px 0;
+            line-height: 0.7;
+        }
+
+        .print-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: white;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: background-color 0.2s;
+        }
+
+        .print-button:hover {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center bg-slate-100 min-h-screen">
+  <div id="navbar" class="w-full"></div>
+    <div class="receipt-window">
+      
+        <div class="receipt-content">
+            <!-- Logo area at the top -->
+            <img src="assets/images/logo.png" alt="Xpress Agent Logo" class="title-logo mb-4">
+           
+            <div class="section-data text-center w-full max-w-xs text-xs mb-3">
+                MASAKARKUDA COMMUNICATION<br>
+                1 KABAWA 23 KANO<br>
+                RE-PRINT
+            </div>
+       
+            <div class="data-item w-full max-w-xs text-xs">
+                <span class="label font-semibold">DATE/TIME:</span>
+                <span class="value">25/07/2026, 07:47 PM</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs">
+                <span class="label font-semibold">TERMINAL ID:</span>
+                <span class="value">2XPRC712</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs mb-3">
+                <span class="label font-semibold">MERCHANT ID:</span>
+                <span class="value">2LUXAA0000000001</span>
+            </div>
+            <div class="divider text-xs">*************************************</div>
+
+            <div class="title-text section-title font-bold mb-1">TRANSFER</div>
+            <div class="title-text section-title font-bold mb-2">CUSTOMER'S COPY</div>
+            <div class="divider text-xs">*************************************</div>
+
+            <div class="data-item w-full max-w-xs text-xs">
+                <span class="label font-semibold">RECIPIENT:</span>
+                <span class="value">IBRAHIM RABI ABDULLAHI</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs mb-1">
+                <span class="label font-semibold">BANK:</span>
+                <span class="value">First Bank Of Nigeria</span>
+            </div>
+            
+                   <div class="data-item bold-data w-full max-w-xs text-xs">
+                <span class="label font-semibold">ACCOUNT NUMBER:</span>
+                <span class="value">3182860677</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs">
+                <span class="label font-semibold">PRODUCT:</span>
+                <span class="value">OTHERS</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs">
+                <span class="label font-semibold">NUMBER OF UNIT:</span>
+                <span class="value">null null</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs mb-1">
+                <span class="label font-semibold">AMOUNT PER UNIT:</span>
+                <span class="value">#null/null</span>
+            </div>
+            <div class="data-item w-full max-w-xs text-xs mb-3">
+                <span class="label font-semibold">TRANSACTION REF:</span>
+                <span class="value">TRF-0313c91c-09352764289</span>
+            </div>
+        
+            <div class="divider text-xs">**************************************</div>
+
+            <div class="status-line text-lg font-bold mb-1">successful</div>
+            <div class="amount-line text-2xl font-semibold mb-1"><span class="naira-sign">₦</span>750,000.00</div>
+            <div class="divider text-xs">**************************************</div>
+            
+            <div class="ad-line text-xs text-center w-full max-w-xs mb-1">BUY AIRTIME AND PAY ELECTRICITY BILLS</div>
+            <div class="ad-line text-xs text-center w-full max-w-xs mb-2">HERE ANYTIME ANYDAY!</div>
+            <div class="footer-line text-xs font-semibold">Email:-</div>
+            <div class="footer-line text-xs font-semibold mb-1">Phone number:-</div>
+            <div class="footer-line text-xs text-slate-500 mb-2">LUX:1.1.1-2.3.7</div>
+            
+            <div class="divider text-xs">********************************************************</div>
+        </div>
+        <button class="print-button" onclick="window.print();">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            PRINT (58mm)
+        </button>
+    </div>
+    <script src="assets/js/app.js"></script>
+    <script>
+      loadComponent('components/navbar.html','#navbar');
+    </script>
+</body>
+</html>
