@@ -1,0 +1,27 @@
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
+  <div class="max-w-6xl mx-auto p-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <button id="backBtn" onclick="history.back()" class="hidden md:inline-flex items-center justify-center w-9 h-9 rounded bg-slate-100 hover:bg-slate-200" aria-label="Go back">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <img src="assets/images/logo.png" class="w-8 h-8" alt="logo">
+      <span class="font-semibold text-green-600">Axpress</span>
+    </div>
+    <div class="hidden sm:flex items-center gap-3">
+      <a href="dashboard.html" class="text-sm">Home</a>
+      <a href="transfer.html" class="text-sm">Transfer</a>
+      <a href="beneficiaries.html" class="text-sm">Beneficiaries</a>
+      <a href="history.html" class="text-sm">History</a>
+      <a href="cards.html" class="text-sm">Cards</a>
+      <a href="profile.html" class="text-sm">Profile</a>
+    </div>
+  </div>
+</nav>
+<div class="h-16"></div>
+<script>
+  // Show back button only when there is history to go back to
+  try{
+    const btn = document.getElementById('backBtn');
+    if(window.history && window.history.length > 1) btn.classList.remove('hidden');
+  }catch(e){}
+</script>
