@@ -33,7 +33,7 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
           <button onclick="history.back()" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200" aria-label="Go back">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
           </button>
           <div>
             <h3 class="text-lg font-semibold">Welcome back, <span id="userName">User</span></h3>
@@ -122,7 +122,18 @@
       const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
       document.getElementById('userName').textContent = user.name || 'User';
 
-      const tx = JSON.parse(localStorage.getItem('ft_transactions')||'[]');
+      // Fixed default transactions data
+      const defaultTransactions = [
+        { id: 'TRF-001', recipient: 'Ibrahim Rabi', bank: 'First Bank Of Nigeria', amount: 50000, date: '2024-01-15', type: 'credit' },
+        { id: 'TRF-002', recipient: 'Amina Yusuf', bank: 'GTBank', amount: 25000, date: '2024-01-14', type: 'debit' },
+        { id: 'TRF-003', recipient: 'John Doe', bank: 'Zenith Bank', amount: 75000, date: '2024-01-13', type: 'credit' },
+        { id: 'TRF-004', recipient: 'Grace Nwankwo', bank: 'Access Bank', amount: 15000, date: '2024-01-12', type: 'debit' },
+        { id: 'TRF-005', recipient: 'Samuel Kola', bank: 'Guarantee Trust Bank', amount: 120000, date: '2024-01-11', type: 'credit' },
+        { id: 'TRF-006', recipient: 'Fatima Bello', bank: 'First Bank Of Nigeria', amount: 35000, date: '2024-01-10', type: 'debit' },
+        { id: 'TRF-007', recipient: 'Ibrahim Rabi', bank: 'GTBank', amount: 90000, date: '2024-01-09', type: 'credit' },
+        { id: 'TRF-008', recipient: 'Chioma Okafor', bank: 'Zenith Bank', amount: 45000, date: '2024-01-08', type: 'debit' }
+      ];
+
       const list = document.getElementById('transactionsList');
       const balanceEl = document.getElementById('balance');
       const ledgerEl = document.getElementById('ledger');
@@ -130,25 +141,26 @@
       const outgoingEl = document.getElementById('outgoing');
       const totalTxEl = document.getElementById('totalTx');
 
-      // compute simple stats
+      // compute stats from fixed transactions
       let incoming = 0, outgoing = 0;
-      tx.forEach(t=>{
+      defaultTransactions.forEach(t=>{
         const amt = Number(t.amount)||0;
         if(t.type === 'debit') outgoing += amt;
         else if(t.type === 'credit') incoming += amt;
       });
-      // for demo, set available balance as a static number or compute from stored value
-      const available = Number(localStorage.getItem('ft_balance')|| (1000000 - outgoing));
+      
+      // Set static balance
+      const available = 250000;
       balanceEl.textContent = available.toLocaleString();
       ledgerEl.textContent = (available - 0).toLocaleString();
       incomingEl.textContent = incoming.toLocaleString();
       outgoingEl.textContent = outgoing.toLocaleString();
-      totalTxEl.textContent = tx.length;
+      totalTxEl.textContent = defaultTransactions.length;
 
-      if(!tx.length) list.innerHTML = '<div class="text-sm text-slate-500">No transactions yet.</div>';
-      tx.slice().reverse().slice(0,8).forEach(t => {
+      // Display fixed transactions
+      defaultTransactions.forEach(t => {
         const el = document.createElement('div');
-        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center';
+        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
         const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
         el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
         el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
