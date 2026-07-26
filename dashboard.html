@@ -33,7 +33,7 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
           <button onclick="history.back()" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200" aria-label="Go back">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <div>
             <h3 class="text-lg font-semibold">Welcome back, <span id="userName">User</span></h3>
@@ -122,15 +122,15 @@
       const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
       document.getElementById('userName').textContent = user.name || 'User';
 
-      // Fixed default transactions data
+      // Fixed default transactions data (hard-coded, not from localStorage)
       const defaultTransactions = [
-        { id: 'TRF-001', recipient: 'Card Withdrawal', bank: 'Opay', amount: 50000, date: '2024-01-15', type: 'credit' },
-        { id: 'TRF-002', recipient: 'Ibrahim Rabi Abdullahi', bank: 'First Bank of Nigeria', amount: 750,000, date: '2026-07-25', type: 'debit' },
+        { id: 'TRF-001', recipient: 'Card Withdrawal', bank: 'Opay', amount: 50000, date: '2026-07-25', type: 'credit' },
+        { id: 'TRF-002', recipient: 'Ibrahim Rabi Abdullahi', bank: 'First Bank of Nigeria', amount: 750000, date: '2026-07-25', type: 'debit' },
         { id: 'TRF-003', recipient: 'John Doe', bank: 'Zenith Bank', amount: 75000, date: '2026-07-25', type: 'credit' },
         { id: 'TRF-004', recipient: 'Grace Nwankwo', bank: 'Access Bank', amount: 15000, date: '2026-07-25', type: 'debit' },
         { id: 'TRF-005', recipient: 'Card Withdrawal', bank: 'Moniepoint', amount: 120000, date: '2026-07-24', type: 'credit' },
         { id: 'TRF-006', recipient: 'Fatima Bello', bank: 'Opay', amount: 35000, date: '2026-07-25', type: 'debit' },
-        { id: 'TRF-007', recipient: 'Card Withdrawal, bank: 'Opay', amount: 90000, date: '2026-07-25', type: 'credit' },
+        { id: 'TRF-007', recipient: 'Card Withdrawal', bank: 'Opay', amount: 90000, date: '2026-07-25', type: 'credit' },
         { id: 'TRF-008', recipient: 'Isah Abdullahi', bank: 'Opay', amount: 45000, date: '2026-07-25', type: 'debit' }
       ];
 
@@ -149,7 +149,7 @@
         else if(t.type === 'credit') incoming += amt;
       });
       
-      // Set static balance
+      // Set static balance (example static value)
       const available = 250000;
       balanceEl.textContent = available.toLocaleString();
       ledgerEl.textContent = (available - 0).toLocaleString();
@@ -162,8 +162,14 @@
         const el = document.createElement('div');
         el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
         const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
-        el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
-        el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
+        el.innerHTML = `
+          <div>
+            <div class="font-medium">${t.recipient}</div>
+            <div class="text-sm text-slate-500">${t.bank} • ${t.date}</div>
+          </div>
+          <div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>
+        `;
+        el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+encodeURIComponent(t.id));
         list.appendChild(el);
       });
     });
