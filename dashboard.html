@@ -1,1 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard - Axpress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+  <div id="navbar"></div>
+  <div class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Sidebar (desktop) -->
+    <aside class="hidden md:block col-span-1 bg-white rounded-lg shadow p-4">
+      <div class="flex items-center gap-3 mb-4">
+        <img src="assets/images/logo.png" class="w-10 h-10" alt="logo">
+        <div>
+          <div class="font-semibold text-green-600">Axpress</div>
+          <div class="text-xs text-slate-500">Personal Account</div>
+        </div>
+      </div>
+      <nav class="space-y-2 text-sm">
+        <a href="dashboard.html" class="block p-2 rounded bg-green-50 text-green-700">Dashboard</a>
+        <a href="transfer.html" class="block p-2 rounded hover:bg-slate-50">Transfer</a>
+        <a href="beneficiaries.html" class="block p-2 rounded hover:bg-slate-50">Beneficiaries</a>
+        <a href="history.html" class="block p-2 rounded hover:bg-slate-50">History</a>
+        <a href="cards.html" class="block p-2 rounded hover:bg-slate-50">Cards</a>
+        <a href="profile.html" class="block p-2 rounded hover:bg-slate-50">Profile</a>
+      </nav>
+    </aside>
 
+    <!-- Main content -->
+    <main class="col-span-1 md:col-span-3">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <button onclick="history.back()" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <div>
+            <h3 class="text-lg font-semibold">Welcome back, <span id="userName">User</span></h3>
+            <p class="text-sm text-slate-500">Here's summary of your account</p>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <a href="notifications.html" class="text-slate-600">Notifications</a>
+          <a href="profile.html" class="text-slate-600">Profile</a>
+        </div>
+      </div>
+
+      <!-- Balance card -->
+      <div class="bg-white rounded-lg shadow p-4 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-slate-500">Available Balance</div>
+            <div class="text-3xl font-bold text-green-600">₦<span id="balance">0.00</span></div>
+            <div class="text-sm text-slate-500">Ledger: ₦<span id="ledger">0.00</span></div>
+          </div>
+          <div class="flex gap-2">
+            <a href="transfer.html" class="px-4 py-2 bg-green-600 text-white rounded-lg">Transfer</a>
+            <a href="cards.html" class="px-4 py-2 bg-white border rounded-lg">Cards</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div class="bg-white p-3 rounded shadow">
+          <div class="text-sm text-slate-500">Incoming</div>
+          <div class="text-lg font-semibold text-green-600">₦<span id="incoming">0</span></div>
+        </div>
+        <div class="bg-white p-3 rounded shadow">
+          <div class="text-sm text-slate-500">Outgoing</div>
+          <div class="text-lg font-semibold text-rose-600">₦<span id="outgoing">0</span></div>
+        </div>
+        <div class="bg-white p-3 rounded shadow">
+          <div class="text-sm text-slate-500">Total Transactions</div>
+          <div class="text-lg font-semibold"> <span id="totalTx">0</span></div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="bg-white p-3 rounded shadow mb-4">
+        <div class="flex gap-3 overflow-auto">
+          <a href="transfer.html" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+            <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">💸</div>
+            <div class="text-sm">Transfer</div>
+          </a>
+          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+            <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">📇</div>
+            <div class="text-sm">Beneficiaries</div>
+          </a>
+          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+            <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">📄</div>
+            <div class="text-sm">Bills</div>
+          </a>
+          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+            <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">💳</div>
+            <div class="text-sm">Cards</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent transactions -->
+      <section>
+        <h4 class="font-semibold mb-3">Recent Transactions</h4>
+        <div id="transactionsList" class="space-y-3"></div>
+      </section>
+
+      <!-- Mobile bottom nav -->
+      <nav class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow md:hidden flex gap-2 px-3 py-2">
+        <a href="dashboard.html" class="text-sm px-3">Home</a>
+        <a href="transfer.html" class="text-sm px-3">Transfer</a>
+        <a href="history.html" class="text-sm px-3">History</a>
+        <a href="cards.html" class="text-sm px-3">Cards</a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      loadComponent('components/navbar.html','#navbar');
+      const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
+      document.getElementById('userName').textContent = user.name || 'User';
+
+      // Fixed default transactions data
+      const defaultTransactions = [
+        { id: 'TRF-001', recipient: 'Card Withdrawal', bank: 'Opay', amount: 50000, date: '2024-01-15', type: 'credit' },
+        { id: 'TRF-002', recipient: 'Ibrahim Rabi Abdullahi', bank: 'First Bank of Nigeria', amount: 750,000, date: '2026-07-25', type: 'debit' },
+        { id: 'TRF-003', recipient: 'John Doe', bank: 'Zenith Bank', amount: 75000, date: '2026-07-25', type: 'credit' },
+        { id: 'TRF-004', recipient: 'Grace Nwankwo', bank: 'Access Bank', amount: 15000, date: '2026-07-25', type: 'debit' },
+        { id: 'TRF-005', recipient: 'Card Withdrawal', bank: 'Moniepoint', amount: 120000, date: '2026-07-24', type: 'credit' },
+        { id: 'TRF-006', recipient: 'Fatima Bello', bank: 'Opay', amount: 35000, date: '2026-07-25', type: 'debit' },
+        { id: 'TRF-007', recipient: 'Card Withdrawal, bank: 'Opay', amount: 90000, date: '2026-07-25', type: 'credit' },
+        { id: 'TRF-008', recipient: 'Isah Abdullahi', bank: 'Opay', amount: 45000, date: '2026-07-25', type: 'debit' }
+      ];
+
+      const list = document.getElementById('transactionsList');
+      const balanceEl = document.getElementById('balance');
+      const ledgerEl = document.getElementById('ledger');
+      const incomingEl = document.getElementById('incoming');
+      const outgoingEl = document.getElementById('outgoing');
+      const totalTxEl = document.getElementById('totalTx');
+
+      // compute stats from fixed transactions
+      let incoming = 0, outgoing = 0;
+      defaultTransactions.forEach(t=>{
+        const amt = Number(t.amount)||0;
+        if(t.type === 'debit') outgoing += amt;
+        else if(t.type === 'credit') incoming += amt;
+      });
+      
+      // Set static balance
+      const available = 250000;
+      balanceEl.textContent = available.toLocaleString();
+      ledgerEl.textContent = (available - 0).toLocaleString();
+      incomingEl.textContent = incoming.toLocaleString();
+      outgoingEl.textContent = outgoing.toLocaleString();
+      totalTxEl.textContent = defaultTransactions.length;
+
+      // Display fixed transactions
+      defaultTransactions.forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
+        const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
+        el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
+        el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
+        list.appendChild(el);
+      });
+    });
+  </script>
+</body>
+</html>
