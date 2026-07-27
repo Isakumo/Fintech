@@ -33,7 +33,7 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
           <button onclick="history.back()" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200" aria-label="Go back">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M[...]
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <div>
             <h3 class="text-lg font-semibold">Welcome back, <span id="userName">User</span></h3>
@@ -99,6 +99,27 @@
         </div>
       </div>
 
+      <!-- Demo transfer form -->
+      <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="font-semibold">Make a Demo Transfer</h4>
+          <small class="text-slate-500">This is a demo — no real money is moved.</small>
+        </div>
+        <form id="demoTransferForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input name="recipient" required placeholder="Recipient name" class="p-2 border rounded" />
+          <input name="bank" required placeholder="Bank" class="p-2 border rounded" />
+          <input name="amount" required type="number" min="1" placeholder="Amount (NGN)" class="p-2 border rounded" />
+          <select name="type" class="p-2 border rounded">
+            <option value="debit">Debit (send)</option>
+            <option value="credit">Credit (receive)</option>
+          </select>
+          <input name="narration" placeholder="Narration (optional)" class="p-2 border rounded col-span-1 sm:col-span-2" />
+          <div class="sm:col-span-2 text-right">
+            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Submit Demo Transfer</button>
+          </div>
+        </form>
+      </div>
+
       <!-- Recent transactions -->
       <section>
         <h4 class="font-semibold mb-3">Recent Transactions</h4>
@@ -144,41 +165,141 @@
       const incomingEl = document.getElementById('incoming');
       const outgoingEl = document.getElementById('outgoing');
       const totalTxEl = document.getElementById('totalTx');
+      const form = document.getElementById('demoTransferForm');
 
-      // compute stats from fixed transactions
-      let incoming = 0, outgoing = 0;
-      defaultTransactions.forEach(t=>{
-        const amt = Number(t.amount)||0;
-        if(t.type === 'debit') outgoing += amt;
-        else if(t.type === 'credit') incoming += amt;
-      });
-      
-      // Set static balance (example static value)
-      const available = 250000;
-      balanceEl.textContent = available.toLocaleString();
-      ledgerEl.textContent = (available - 0).toLocaleString();
-      incomingEl.textContent = incoming.toLocaleString();
-      outgoingEl.textContent = outgoing.toLocaleString();
-      totalTxEl.textContent = defaultTransactions.length;
+      // Helpers for storage keys
+      const TX_KEY = 'ft_transactions';
+      const BAL_KEY = 'ft_balance';
 
-      // Display fixed transactions
-      defaultTransactions.forEach(t => {
-        const el = document.createElement('div');
-        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
-        const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
-        el.innerHTML = `
-          <div>
-            <div class="font-medium">${t.recipient}</div>
-            <div class="text-sm text-slate-500">${t.bank} • ${t.date}</div>
-          </div>
-          <div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>
-        `;
-        el.addEventListener('click', ()=> {
-          sessionStorage.setItem('selectedTransaction', JSON.stringify(t));
-          location.href = 'transaction-details.html?id='+encodeURIComponent(t.id);
+      // Get stored user-made transactions (these are demo transfers created by the user)
+      function getStoredTransactions(){
+        try{
+          return JSON.parse(localStorage.getItem(TX_KEY) || '[]');
+        }catch(e){
+          return [];
+        }
+      }
+
+      function saveStoredTransactions(arr){
+        localStorage.setItem(TX_KEY, JSON.stringify(arr));
+      }
+
+      function getStoredBalance(){
+        const raw = localStorage.getItem(BAL_KEY);
+        if(raw == null) return 250000; // default
+        return Number(raw) || 0;
+      }
+
+      function saveStoredBalance(val){
+        localStorage.setItem(BAL_KEY, String(val));
+      }
+
+      // Combine stored (user) transactions first so they appear on top, then default transactions
+      function allTransactions(){
+        const stored = getStoredTransactions();
+        return stored.concat(defaultTransactions);
+      }
+
+      // Render stats and list
+      function render(){
+        const txs = allTransactions();
+        // compute stats
+        let incoming = 0, outgoing = 0;
+        txs.forEach(t=>{
+          const amt = Number(t.amount)||0;
+          if(t.type === 'debit') outgoing += amt;
+          else if(t.type === 'credit') incoming += amt;
         });
-        list.appendChild(el);
+
+        const available = getStoredBalance();
+        balanceEl.textContent = available.toLocaleString();
+        ledgerEl.textContent = (available - 0).toLocaleString();
+        incomingEl.textContent = incoming.toLocaleString();
+        outgoingEl.textContent = outgoing.toLocaleString();
+        totalTxEl.textContent = txs.length;
+
+        // Render list (latest first)
+        list.innerHTML = '';
+        txs.forEach(t => {
+          const el = document.createElement('div');
+          el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
+          const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
+          el.innerHTML = `
+            <div>
+              <div class="font-medium">${escapeHtml(t.recipient)}</div>
+              <div class="text-sm text-slate-500">${escapeHtml(t.bank)} • ${escapeHtml(t.date)}</div>
+            </div>
+            <div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>
+          `;
+          el.addEventListener('click', ()=> {
+            sessionStorage.setItem('selectedTransaction', JSON.stringify(t));
+            location.href = 'transaction-details.html?id='+encodeURIComponent(t.id);
+          });
+          list.appendChild(el);
+        });
+      }
+
+      // Basic HTML escaping for displayed strings
+      function escapeHtml(str){
+        if(!str && str !== 0) return '';
+        return String(str).replace(/[&<>"']/g, function(s){
+          return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s];
+        });
+      }
+
+      // Create transaction object and persist
+      function addTransaction({recipient, bank, amount, type, narration}){
+        const id = 'TRF-' + Date.now().toString().slice(-12);
+        const date = new Date().toISOString().slice(0,10);
+        const tx = { id, recipient, bank, amount: Number(amount), date, type, status: 'successful', narration };
+        const stored = getStoredTransactions();
+        stored.unshift(tx); // newest first
+        saveStoredTransactions(stored);
+
+        // Update balance based on type
+        let balance = getStoredBalance();
+        if(type === 'debit') balance = balance - Number(amount);
+        else balance = balance + Number(amount);
+        saveStoredBalance(balance);
+
+        // Notify other tabs
+        try{ localStorage.setItem('ft_last_update', Date.now().toString()); }catch(e){}
+
+        render();
+      }
+
+      // Handle demo form submit
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const data = new FormData(form);
+        const recipient = data.get('recipient')?.trim();
+        const bank = data.get('bank')?.trim();
+        const amount = Number(data.get('amount'));
+        const type = data.get('type');
+        const narration = data.get('narration')?.trim() || (type === 'debit' ? 'Transfer' : 'Deposit');
+
+        if(!recipient || !bank || !amount || amount <= 0){
+          alert('Please provide valid recipient, bank and amount');
+          return;
+        }
+
+        addTransaction({recipient, bank, amount, type, narration});
+        form.reset();
+        // simple feedback
+        const btn = form.querySelector('button[type="submit"]');
+        btn.textContent = 'Submitted';
+        setTimeout(()=> btn.textContent = 'Submit Demo Transfer', 1200);
       });
+
+      // Listen for storage changes (other tabs or pages)
+      window.addEventListener('storage', (ev)=>{
+        if([TX_KEY, BAL_KEY, 'ft_last_update'].includes(ev.key)){
+          render();
+        }
+      });
+
+      // Initial render
+      render();
     });
   </script>
 </body>
