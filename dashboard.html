@@ -122,7 +122,10 @@
 
       <!-- Recent transactions -->
       <section>
-        <h4 class="font-semibold mb-3">Recent Transactions</h4>
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-semibold">Recent Transactions</h4>
+          <button id="printTxBtn" class="px-3 py-1 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 text-sm">Print History</button>
+        </div>
         <div id="transactionsList" class="space-y-3"></div>
       </section>
 
@@ -166,6 +169,7 @@
       const outgoingEl = document.getElementById('outgoing');
       const totalTxEl = document.getElementById('totalTx');
       const form = document.getElementById('demoTransferForm');
+      const printBtn = document.getElementById('printTxBtn');
 
       // Helpers for storage keys
       const TX_KEY = 'ft_transactions';
@@ -268,6 +272,78 @@
         render();
       }
 
+      // Print transactions - opens a new window with a printable table and calls print()
+      function printTransactions(){
+        const txs = allTransactions();
+        const rows = txs.map(t => {
+          return `
+            <tr class="border-b">
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.date)}</td>
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.id)}</td>
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.recipient)}</td>
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.bank)}</td>
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.type)}</td>
+              <td class="px-3 py-2 text-sm text-right">₦${Number(t.amount).toLocaleString()}</td>
+              <td class="px-3 py-2 text-sm">${escapeHtml(t.narration || '')}</td>
+            </tr>
+          `;
+        }).join('');
+
+        const doc = `
+          <!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width,initial-scale=1" />
+            <title>Transaction History</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @media print { .no-print { display: none !important; } }
+              body { color: #0f172a; }
+            </style>
+          </head>
+          <body class="p-6 bg-white text-slate-800">
+            <div class="max-w-4xl mx-auto">
+              <div class="flex items-center justify-between mb-6">
+                <h1 class="text-xl font-semibold">Transaction History</h1>
+                <div>Printed: ${new Date().toLocaleString()}</div>
+              </div>
+              <table class="min-w-full border-collapse border" style="width:100%;">
+                <thead>
+                  <tr class="bg-slate-100 text-left">
+                    <th class="px-3 py-2 text-xs">Date</th>
+                    <th class="px-3 py-2 text-xs">Reference</th>
+                    <th class="px-3 py-2 text-xs">Recipient</th>
+                    <th class="px-3 py-2 text-xs">Bank</th>
+                    <th class="px-3 py-2 text-xs">Type</th>
+                    <th class="px-3 py-2 text-xs text-right">Amount (NGN)</th>
+                    <th class="px-3 py-2 text-xs">Narration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                </tbody>
+              </table>
+              <div class="mt-6 text-sm text-slate-600">Total transactions: ${txs.length}</div>
+            </div>
+            <script>
+              window.onload = function(){
+                window.print();
+              }
+            </script>
+          </body>
+          </html>
+        `;
+
+        const w = window.open('', '_blank');
+        if(!w) {
+          alert('Popup blocked. Please allow popups for this site to print the history.');
+          return;
+        }
+        w.document.write(doc);
+        w.document.close();
+      }
+
       // Handle demo form submit
       form.addEventListener('submit', (e)=>{
         e.preventDefault();
@@ -290,6 +366,13 @@
         btn.textContent = 'Submitted';
         setTimeout(()=> btn.textContent = 'Submit Demo Transfer', 1200);
       });
+
+      // Print button handler
+      if(printBtn){
+        printBtn.addEventListener('click', ()=>{
+          printTransactions();
+        });
+      }
 
       // Listen for storage changes (other tabs or pages)
       window.addEventListener('storage', (ev)=>{
