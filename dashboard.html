@@ -99,27 +99,6 @@
         </div>
       </div>
 
-      <!-- Demo transfer form -->
-      <div class="bg-white p-4 rounded-lg shadow mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="font-semibold">Make a Demo Transfer</h4>
-          <small class="text-slate-500">This is a demo — no real money is moved.</small>
-        </div>
-        <form id="demoTransferForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input name="recipient" required placeholder="Recipient name" class="p-2 border rounded" />
-          <input name="bank" required placeholder="Bank" class="p-2 border rounded" />
-          <input name="amount" required type="number" min="1" placeholder="Amount (NGN)" class="p-2 border rounded" />
-          <select name="type" class="p-2 border rounded">
-            <option value="debit">Debit (send)</option>
-            <option value="credit">Credit (receive)</option>
-          </select>
-          <input name="narration" placeholder="Narration (optional)" class="p-2 border rounded col-span-1 sm:col-span-2" />
-          <div class="sm:col-span-2 text-right">
-            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Submit Demo Transfer</button>
-          </div>
-        </form>
-      </div>
-
       <!-- Recent transactions -->
       <section>
         <div class="flex items-center justify-between mb-3">
@@ -168,70 +147,36 @@
       const incomingEl = document.getElementById('incoming');
       const outgoingEl = document.getElementById('outgoing');
       const totalTxEl = document.getElementById('totalTx');
-      const form = document.getElementById('demoTransferForm');
       const printBtn = document.getElementById('printTxBtn');
 
-      // Helpers for storage keys
-      const TX_KEY = 'ft_transactions';
-      const BAL_KEY = 'ft_balance';
-
-      // Get stored user-made transactions (these are demo transfers created by the user)
-      function getStoredTransactions(){
-        try{
-          return JSON.parse(localStorage.getItem(TX_KEY) || '[]');
-        }catch(e){
-          return [];
-        }
-      }
-
-      function saveStoredTransactions(arr){
-        localStorage.setItem(TX_KEY, JSON.stringify(arr));
-      }
-
-      function getStoredBalance(){
-        const raw = localStorage.getItem(BAL_KEY);
-        if(raw == null) return 250000; // default
-        return Number(raw) || 0;
-      }
-
-      function saveStoredBalance(val){
-        localStorage.setItem(BAL_KEY, String(val));
-      }
-
-      // Combine stored (user) transactions first so they appear on top, then default transactions
-      function allTransactions(){
-        const stored = getStoredTransactions();
-        return stored.concat(defaultTransactions);
-      }
-
-      // Render stats and list
+      // Render stats and list (no demo transfer features)
       function render(){
-        const txs = allTransactions();
         // compute stats
         let incoming = 0, outgoing = 0;
-        txs.forEach(t=>{
+        defaultTransactions.forEach(t=>{
           const amt = Number(t.amount)||0;
           if(t.type === 'debit') outgoing += amt;
           else if(t.type === 'credit') incoming += amt;
         });
 
-        const available = getStoredBalance();
+        // Static balance
+        const available = 250000;
         balanceEl.textContent = available.toLocaleString();
         ledgerEl.textContent = (available - 0).toLocaleString();
         incomingEl.textContent = incoming.toLocaleString();
         outgoingEl.textContent = outgoing.toLocaleString();
-        totalTxEl.textContent = txs.length;
+        totalTxEl.textContent = defaultTransactions.length;
 
-        // Render list (latest first)
+        // Render list
         list.innerHTML = '';
-        txs.forEach(t => {
+        defaultTransactions.forEach(t => {
           const el = document.createElement('div');
           el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
           const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
           el.innerHTML = `
             <div>
-              <div class="font-medium">${escapeHtml(t.recipient)}</div>
-              <div class="text-sm text-slate-500">${escapeHtml(t.bank)} • ${escapeHtml(t.date)}</div>
+              <div class="font-medium">${t.recipient}</div>
+              <div class="text-sm text-slate-500">${t.bank} • ${t.date}</div>
             </div>
             <div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>
           `;
@@ -243,48 +188,19 @@
         });
       }
 
-      // Basic HTML escaping for displayed strings
-      function escapeHtml(str){
-        if(!str && str !== 0) return '';
-        return String(str).replace(/[&<>"']/g, function(s){
-          return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s];
-        });
-      }
-
-      // Create transaction object and persist
-      function addTransaction({recipient, bank, amount, type, narration}){
-        const id = 'TRF-' + Date.now().toString().slice(-12);
-        const date = new Date().toISOString().slice(0,10);
-        const tx = { id, recipient, bank, amount: Number(amount), date, type, status: 'successful', narration };
-        const stored = getStoredTransactions();
-        stored.unshift(tx); // newest first
-        saveStoredTransactions(stored);
-
-        // Update balance based on type
-        let balance = getStoredBalance();
-        if(type === 'debit') balance = balance - Number(amount);
-        else balance = balance + Number(amount);
-        saveStoredBalance(balance);
-
-        // Notify other tabs
-        try{ localStorage.setItem('ft_last_update', Date.now().toString()); }catch(e){}
-
-        render();
-      }
-
       // Print transactions - opens a new window with a printable table and calls print()
       function printTransactions(){
-        const txs = allTransactions();
+        const txs = defaultTransactions;
         const rows = txs.map(t => {
           return `
             <tr class="border-b">
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.date)}</td>
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.id)}</td>
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.recipient)}</td>
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.bank)}</td>
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.type)}</td>
+              <td class="px-3 py-2 text-sm">${t.date}</td>
+              <td class="px-3 py-2 text-sm">${t.id}</td>
+              <td class="px-3 py-2 text-sm">${t.recipient}</td>
+              <td class="px-3 py-2 text-sm">${t.bank}</td>
+              <td class="px-3 py-2 text-sm">${t.type}</td>
               <td class="px-3 py-2 text-sm text-right">₦${Number(t.amount).toLocaleString()}</td>
-              <td class="px-3 py-2 text-sm">${escapeHtml(t.narration || '')}</td>
+              <td class="px-3 py-2 text-sm">${t.narration || ''}</td>
             </tr>
           `;
         }).join('');
@@ -344,42 +260,12 @@
         w.document.close();
       }
 
-      // Handle demo form submit
-      form.addEventListener('submit', (e)=>{
-        e.preventDefault();
-        const data = new FormData(form);
-        const recipient = data.get('recipient')?.trim();
-        const bank = data.get('bank')?.trim();
-        const amount = Number(data.get('amount'));
-        const type = data.get('type');
-        const narration = data.get('narration')?.trim() || (type === 'debit' ? 'Transfer' : 'Deposit');
-
-        if(!recipient || !bank || !amount || amount <= 0){
-          alert('Please provide valid recipient, bank and amount');
-          return;
-        }
-
-        addTransaction({recipient, bank, amount, type, narration});
-        form.reset();
-        // simple feedback
-        const btn = form.querySelector('button[type="submit"]');
-        btn.textContent = 'Submitted';
-        setTimeout(()=> btn.textContent = 'Submit Demo Transfer', 1200);
-      });
-
       // Print button handler
       if(printBtn){
         printBtn.addEventListener('click', ()=>{
           printTransactions();
         });
       }
-
-      // Listen for storage changes (other tabs or pages)
-      window.addEventListener('storage', (ev)=>{
-        if([TX_KEY, BAL_KEY, 'ft_last_update'].includes(ev.key)){
-          render();
-        }
-      });
 
       // Initial render
       render();
