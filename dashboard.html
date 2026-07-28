@@ -122,7 +122,15 @@
       const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
       document.getElementById('userName').textContent = user.name || 'User';
 
-      const tx = JSON.parse(localStorage.getItem('ft_transactions')||'[]');
+      // Fixed transactions array: does not use localStorage
+      const tx = [
+        { id: 't1', recipient: 'John Doe', bank: 'Zenith Bank', date: '2026-07-20', amount: 25000, type: 'debit' },
+        { id: 't2', recipient: 'Acme Corp', bank: 'GTBank', date: '2026-07-18', amount: 150000, type: 'credit' },
+        { id: 't3', recipient: 'Jane Smith', bank: 'Access Bank', date: '2026-07-15', amount: 5000, type: 'debit' },
+        { id: 't4', recipient: 'Utility Co', bank: 'First Bank', date: '2026-07-10', amount: 12000, type: 'debit' },
+        { id: 't5', recipient: 'Payroll', bank: 'UBA', date: '2026-07-01', amount: 350000, type: 'credit' }
+      ];
+
       const list = document.getElementById('transactionsList');
       const balanceEl = document.getElementById('balance');
       const ledgerEl = document.getElementById('ledger');
@@ -130,15 +138,17 @@
       const outgoingEl = document.getElementById('outgoing');
       const totalTxEl = document.getElementById('totalTx');
 
-      // compute simple stats
+      // compute simple stats from fixed tx
       let incoming = 0, outgoing = 0;
       tx.forEach(t=>{
         const amt = Number(t.amount)||0;
         if(t.type === 'debit') outgoing += amt;
         else if(t.type === 'credit') incoming += amt;
       });
-      // for demo, set available balance as a static number or compute from stored value
-      const available = Number(localStorage.getItem('ft_balance')|| (1000000 - outgoing));
+
+      // derive available balance from a fixed starting balance
+      const startingBalance = 250000; // change as needed
+      const available = startingBalance + incoming - outgoing;
       balanceEl.textContent = available.toLocaleString();
       ledgerEl.textContent = (available - 0).toLocaleString();
       incomingEl.textContent = incoming.toLocaleString();
