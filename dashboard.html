@@ -121,7 +121,10 @@
   <script src="assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', ()=>{
-      loadComponent('components/navbar.html','#navbar');
+      // load navbar if helper is available (protect against missing app.js)
+      if(typeof loadComponent === 'function'){
+        try{ loadComponent('components/navbar.html','#navbar'); }catch(e){ console.warn('loadComponent failed:', e); }
+      }
       const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
       document.getElementById('userName').textContent = user.name || 'User';
 
