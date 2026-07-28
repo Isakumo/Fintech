@@ -124,11 +124,17 @@
 
       // Fixed transactions array: does not use localStorage
       const tx = [
-        { id: 't1', recipient: 'John Doe', bank: 'Zenith Bank', date: '2026-07-20', amount: 25000, type: 'debit' },
-        { id: 't2', recipient: 'Acme Corp', bank: 'GTBank', date: '2026-07-18', amount: 150000, type: 'credit' },
-        { id: 't3', recipient: 'Jane Smith', bank: 'Access Bank', date: '2026-07-15', amount: 5000, type: 'debit' },
-        { id: 't4', recipient: 'Utility Co', bank: 'First Bank', date: '2026-07-10', amount: 12000, type: 'debit' },
-        { id: 't5', recipient: 'Payroll', bank: 'UBA', date: '2026-07-01', amount: 350000, type: 'credit' }
+        { id: 'TRF-900678256143', recipient: 'Card Withdrawal', bank: 'Opay', amount: 1000, date: '2026-07-26', type: 'credit', status: 'successful', narration: 'ATM Withdrawal' },
+        { id: 'TRF-967829000245', recipient: 'Isah Abdullahi', bank: 'Opay', amount: 150000, date: '2026-07-26', type: 'debit', status: 'successful', narration: 'Transfer' },
+        { id: 'TRF-905627850365', recipient: 'Adamu Abdullahi', bank: 'Taj Bank', amount: 75000, date: '2026-07-26', type: 'credit', status: 'successful', narration: 'Deposit' },
+        { id: 'TRF-946780100465', recipient: 'Card Withdrawal', bank: 'Opay', amount: 15000, date: '2026-07-26', type: 'debit', status: 'successful', narration: 'Payment' },
+        { id: 'TRF-900678256143', recipient: 'Card Withdrawal', bank: 'Opay', amount: 50000, date: '2026-07-25', type: 'credit', status: 'successful', narration: 'ATM Withdrawal' },
+        { id: 'TRF-967829000245', recipient: 'Ibrahim Rabi Abdullahi', bank: 'First Bank of Nigeria', amount: 750000, date: '2026-07-25', type: 'debit', status: 'successful', narration: 'Transfer' },
+        { id: 'TRF-905627850365', recipient: 'Usman Sani', bank: 'Zenith Bank', amount: 75000, date: '2026-07-25', type: 'credit', status: 'successful', narration: 'Deposit' },
+        { id: 'TRF-946780100465', recipient: 'Bello Ahmad', bank: 'Access Bank', amount: 15000, date: '2026-07-25', type: 'debit', status: 'successful', narration: 'Payment' },
+        { id: 'TRF-842018700563', recipient: 'Card Withdrawal', bank: 'Moniepoint', amount: 120000, date: '2026-07-24', type: 'credit', status: 'successful', narration: 'Withdrawal' },
+        { id: 'TRF-489201700626', recipient: 'Fatima Bello', bank: 'Opay', amount: 35000, date: '2026-07-25', type: 'debit', status: 'successful', narration: 'Transfer' },
+        { id: 'TRF-079012430723', recipient: 'Card Withdrawal', bank: 'United Bank For Africa', amount: 600000, date: '2026-07-25', type: 'credit', status: 'successful', narration: 'Deposit' }, 
       ];
 
       const list = document.getElementById('transactionsList');
