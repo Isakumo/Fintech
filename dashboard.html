@@ -195,64 +195,49 @@
       function printTransactions(){
         const txs = defaultTransactions;
         const rows = txs.map(t => {
-          return `
-            <tr class="border-b">
-              <td class="px-3 py-2 text-sm">${t.date}</td>
-              <td class="px-3 py-2 text-sm">${t.id}</td>
-              <td class="px-3 py-2 text-sm">${t.recipient}</td>
-              <td class="px-3 py-2 text-sm">${t.bank}</td>
-              <td class="px-3 py-2 text-sm">${t.type}</td>
-              <td class="px-3 py-2 text-sm text-right">₦${Number(t.amount).toLocaleString()}</td>
-              <td class="px-3 py-2 text-sm">${t.narration || ''}</td>
-            </tr>
-          `;
+          return '<tr class="border-b">' +
+                 '<td class="px-3 py-2 text-sm">' + t.date + '</td>' +
+                 '<td class="px-3 py-2 text-sm">' + t.id + '</td>' +
+                 '<td class="px-3 py-2 text-sm">' + t.recipient + '</td>' +
+                 '<td class="px-3 py-2 text-sm">' + t.bank + '</td>' +
+                 '<td class="px-3 py-2 text-sm">' + t.type + '</td>' +
+                 '<td class="px-3 py-2 text-sm text-right">₦' + Number(t.amount).toLocaleString() + '</td>' +
+                 '<td class="px-3 py-2 text-sm">' + (t.narration || '') + '</td>' +
+                 '</tr>';
         }).join('');
 
-        const doc = `
-          <!doctype html>
-          <html>
-          <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width,initial-scale=1" />
-            <title>Transaction History</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              @media print { .no-print { display: none !important; } }
-              body { color: #0f172a; }
-            </style>
-          </head>
-          <body class="p-6 bg-white text-slate-800">
-            <div class="max-w-4xl mx-auto">
-              <div class="flex items-center justify-between mb-6">
-                <h1 class="text-xl font-semibold">Transaction History</h1>
-                <div>Printed: ${new Date().toLocaleString()}</div>
-              </div>
-              <table class="min-w-full border-collapse border" style="width:100%;">
-                <thead>
-                  <tr class="bg-slate-100 text-left">
-                    <th class="px-3 py-2 text-xs">Date</th>
-                    <th class="px-3 py-2 text-xs">Reference</th>
-                    <th class="px-3 py-2 text-xs">Recipient</th>
-                    <th class="px-3 py-2 text-xs">Bank</th>
-                    <th class="px-3 py-2 text-xs">Type</th>
-                    <th class="px-3 py-2 text-xs text-right">Amount (NGN)</th>
-                    <th class="px-3 py-2 text-xs">Narration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${rows}
-                </tbody>
-              </table>
-              <div class="mt-6 text-sm text-slate-600">Total transactions: ${txs.length}</div>
-            </div>
-            <script>
-              window.onload = function(){
-                window.print();
-              }
-            <\/script>
-          </body>
-          </html>
-        `;
+        const printedAt = new Date().toLocaleString();
+        const doc = '<!doctype html>' +
+          '<html>' +
+          '<head>' +
+          '<meta charset="utf-8" />' +
+          '<meta name="viewport" content="width=device-width,initial-scale=1" />' +
+          '<title>Transaction History</title>' +
+          '<script src="https://cdn.tailwindcss.com"></script>' +
+          '<style>@media print { .no-print { display: none !important; } } body { color: #0f172a; }</style>' +
+          '</head>' +
+          '<body class="p-6 bg-white text-slate-800">' +
+          '<div class="max-w-4xl mx-auto">' +
+          '<div class="flex items-center justify-between mb-6">' +
+          '<h1 class="text-xl font-semibold">Transaction History</h1>' +
+          '<div>Printed: ' + printedAt + '</div>' +
+          '</div>' +
+          '<table class="min-w-full border-collapse border" style="width:100%;">' +
+          '<thead><tr class="bg-slate-100 text-left">' +
+          '<th class="px-3 py-2 text-xs">Date</th>' +
+          '<th class="px-3 py-2 text-xs">Reference</th>' +
+          '<th class="px-3 py-2 text-xs">Recipient</th>' +
+          '<th class="px-3 py-2 text-xs">Bank</th>' +
+          '<th class="px-3 py-2 text-xs">Type</th>' +
+          '<th class="px-3 py-2 text-xs text-right">Amount (NGN)</th>' +
+          '<th class="px-3 py-2 text-xs">Narration</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+          '<div class="mt-6 text-sm text-slate-600">Total transactions: ' + txs.length + '</div>' +
+          '</div>' +
+          '<script>window.onload = function(){ window.print(); }<\/script>' +
+          '</body></html>';
 
         const w = window.open('', '_blank');
         if(!w) {
