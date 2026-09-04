@@ -37,12 +37,12 @@
           </button>
           <div>
             <h3 class="text-lg font-semibold">Welcome back, <span id="userName">User</span></h3>
-            <p class="text-sm text-slate-500">Here's summary of your account</p>
+            <p class="text-sm text-slate-500">Here's a summary of your account</p>
           </div>
         </div>
         <div class="hidden md:flex items-center gap-3">
-          <a href="notifications.html" class="text-slate-600">Notifications</a>
-          <a href="profile.html" class="text-slate-600">Profile</a>
+          <a href="history.html" class="text-slate-600 hover:text-slate-800">History</a>
+          <a href="profile.html" class="text-slate-600 hover:text-slate-800">Profile</a>
         </div>
       </div>
 
@@ -55,8 +55,8 @@
             <div class="text-sm text-slate-500">Ledger: ₦<span id="ledger">0.00</span></div>
           </div>
           <div class="flex gap-2">
-            <a href="transfer.html" class="px-4 py-2 bg-green-600 text-white rounded-lg">Transfer</a>
-            <a href="cards.html" class="px-4 py-2 bg-white border rounded-lg">Cards</a>
+            <a href="transfer.html" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Transfer</a>
+            <a href="cards.html" class="px-4 py-2 bg-white border rounded-lg hover:bg-slate-50">Cards</a>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@
         </div>
         <div class="bg-white p-3 rounded shadow">
           <div class="text-sm text-slate-500">Total Transactions</div>
-          <div class="text-lg font-semibold"> <span id="totalTx">0</span></div>
+          <div class="text-lg font-semibold"><span id="totalTx">0</span></div>
         </div>
       </div>
 
@@ -84,15 +84,15 @@
             <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">💸</div>
             <div class="text-sm">Transfer</div>
           </a>
-          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+          <a href="beneficiaries.html" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
             <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">📇</div>
             <div class="text-sm">Beneficiaries</div>
           </a>
-          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+          <a href="history.html" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
             <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">📄</div>
-            <div class="text-sm">Bills</div>
+            <div class="text-sm">History</div>
           </a>
-          <a href="#" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
+          <a href="cards.html" class="flex flex-col items-center gap-2 p-3 min-w-[90px] rounded hover:bg-slate-50">
             <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center">💳</div>
             <div class="text-sm">Cards</div>
           </a>
@@ -106,11 +106,11 @@
       </section>
 
       <!-- Mobile bottom nav -->
-      <nav class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow md:hidden flex gap-2 px-3 py-2">
-        <a href="dashboard.html" class="text-sm px-3">Home</a>
-        <a href="transfer.html" class="text-sm px-3">Transfer</a>
-        <a href="history.html" class="text-sm px-3">History</a>
-        <a href="cards.html" class="text-sm px-3">Cards</a>
+      <nav class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow md:hidden flex gap-2 px-3 py-2 z-40">
+        <a href="dashboard.html" class="text-sm px-3 text-green-600 font-semibold">Home</a>
+        <a href="transfer.html" class="text-sm px-3 hover:text-green-600">Transfer</a>
+        <a href="history.html" class="text-sm px-3 hover:text-green-600">History</a>
+        <a href="profile.html" class="text-sm px-3 hover:text-green-600">Profile</a>
       </nav>
     </main>
   </div>
@@ -119,10 +119,18 @@
   <script>
     document.addEventListener('DOMContentLoaded', ()=>{
       loadComponent('components/navbar.html','#navbar');
+      
+      // Check if user is logged in
+      if (!isLoggedIn()) {
+        Toast.error('Please login first');
+        setTimeout(() => location.href = 'login.html', 1000);
+        return;
+      }
+      
       const user = JSON.parse(localStorage.getItem('ft_user')||'{}');
       document.getElementById('userName').textContent = user.name || 'User';
 
-      // Fixed transactions array: does not use localStorage
+      // Fixed transactions array
       const tx = [
         { id: 'TRF-900678256143', recipient: 'Card Withdrawal', bank: 'Opay', amount: 500000, date: '2026-07-26', type: 'credit', status: 'successful', narration: 'ATM Withdrawal' },
         { id: 'TRF-967829000245', recipient: 'Isah Abdullahi', bank: 'Opay', amount: 15000, date: '2026-07-26', type: 'debit', status: 'successful', narration: 'Transfer' },
@@ -153,7 +161,7 @@
       });
 
       // derive available balance from a fixed starting balance
-      const startingBalance = 250000; // change as needed
+      const startingBalance = 250000;
       const available = startingBalance + incoming - outgoing;
       balanceEl.textContent = available.toLocaleString();
       ledgerEl.textContent = (available - 0).toLocaleString();
@@ -164,10 +172,13 @@
       if(!tx.length) list.innerHTML = '<div class="text-sm text-slate-500">No transactions yet.</div>';
       tx.slice().reverse().slice(0,8).forEach(t => {
         const el = document.createElement('div');
-        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center';
+        el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
         const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
         el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
-        el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
+        el.addEventListener('click', ()=> {
+          sessionStorage.setItem('selectedTransaction', JSON.stringify(t));
+          location.href = 'transaction-details.html?id='+t.id;
+        });
         list.appendChild(el);
       });
     });
