@@ -14,19 +14,24 @@
       <h2 class="text-2xl font-bold text-green-600 mt-2">Create Account</h2>
     </div>
     <form id="registerForm" class="bg-white shadow rounded p-6">
-      <label class="block text-sm">Full Name</label>
-      <input id="fullname" class="mt-1 block w-full rounded border px-3 py-2" required>
-      <label class="block text-sm mt-3">Phone</label>
-      <input id="phone" class="mt-1 block w-full rounded border px-3 py-2" required>
-      <label class="block text-sm mt-3">Email</label>
-      <input id="email" type="email" class="mt-1 block w-full rounded border px-3 py-2" required>
-      <label class="block text-sm mt-3">Password</label>
-      <input id="password" type="password" class="mt-1 block w-full rounded border px-3 py-2" required>
-      <label class="block text-sm mt-3">Confirm Password</label>
-      <input id="confirm" type="password" class="mt-1 block w-full rounded border px-3 py-2" required>
-      <div id="regMsg" class="text-sm text-red-600 mt-2" role="status" aria-live="polite"></div>
-      <button class="w-full mt-4 bg-green-600 text-white py-2 rounded" type="submit">Create Account</button>
-      <p class="text-center text-sm mt-4">Already have account? <a href="login.html" class="text-green-600">Login</a></p>
+      <label class="block text-sm font-medium">Full Name</label>
+      <input id="fullname" class="mt-1 block w-full rounded border px-3 py-2" placeholder="First and Last name" required>
+      
+      <label class="block text-sm font-medium mt-3">Phone</label>
+      <input id="phone" class="mt-1 block w-full rounded border px-3 py-2" placeholder="10-11 digits" required>
+      
+      <label class="block text-sm font-medium mt-3">Email</label>
+      <input id="email" type="email" class="mt-1 block w-full rounded border px-3 py-2" placeholder="example@mail.com" required>
+      
+      <label class="block text-sm font-medium mt-3">Password</label>
+      <input id="password" type="password" class="mt-1 block w-full rounded border px-3 py-2" placeholder="Minimum 6 characters" required>
+      
+      <label class="block text-sm font-medium mt-3">Confirm Password</label>
+      <input id="confirm" type="password" class="mt-1 block w-full rounded border px-3 py-2" placeholder="Confirm password" required>
+      
+      <div id="regMsg" class="text-sm text-red-600 mt-3" role="status" aria-live="polite"></div>
+      <button class="w-full mt-4 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition" type="submit">Create Account</button>
+      <p class="text-center text-sm mt-4">Already have account? <a href="login.html" class="text-green-600 hover:underline">Login</a></p>
     </form>
   </div>
   <script src="assets/js/app.js"></script>
@@ -34,17 +39,59 @@
     loadComponent('components/navbar.html','#navbar');
     document.getElementById('registerForm').addEventListener('submit', async function(e){
       e.preventDefault();
+      clearAllErrors();
+      
       const name = document.getElementById('fullname').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const email = document.getElementById('email').value.trim();
       const pw = document.getElementById('password').value;
       const conf = document.getElementById('confirm').value;
-      const msg = document.getElementById('regMsg'); msg.textContent='';
-      if(pw !== conf){ msg.textContent = 'Passwords do not match'; return; }
+      const msg = document.getElementById('regMsg');
+      msg.textContent='';
+      
       try{
+        // Validate full name
+        const nameVal = Validators.fullName(name);
+        if (!nameVal.isValid) {
+          setFieldError('fullname', nameVal.error);
+          throw new Error(nameVal.error);
+        }
+        
+        // Validate phone
+        const phoneVal = Validators.phone(phone);
+        if (!phoneVal.isValid) {
+          setFieldError('phone', phoneVal.error);
+          throw new Error(phoneVal.error);
+        }
+        
+        // Validate email
+        const emailVal = Validators.email(email);
+        if (!emailVal.isValid) {
+          setFieldError('email', emailVal.error);
+          throw new Error(emailVal.error);
+        }
+        
+        // Validate password
+        const pwVal = Validators.password(pw);
+        if (!pwVal.isValid) {
+          setFieldError('password', pwVal.error);
+          throw new Error(pwVal.error);
+        }
+        
+        // Validate password match
+        const matchVal = Validators.passwordMatch(pw, conf);
+        if (!matchVal.isValid) {
+          setFieldError('confirm', matchVal.error);
+          throw new Error(matchVal.error);
+        }
+        
         await createAccount({name, contact:phone, email, password:pw});
-        location.href = 'dashboard.html';
-      }catch(err){ msg.textContent = err.message; }
+        Toast.success('Account created successfully!');
+        setTimeout(() => location.href = 'dashboard.html', 500);
+      }catch(err){ 
+        msg.textContent = err.message;
+        Toast.error(err.message);
+      }
     });
   </script>
 </body>
