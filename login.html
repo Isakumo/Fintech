@@ -15,19 +15,25 @@
     </div>
     <form id="loginForm" class="bg-white shadow rounded p-6">
       <label class="block text-sm font-medium text-slate-700">Email or Phone</label>
-      <input id="username" name="identifier" class="mt-1 block w-full rounded border px-3 py-2" required>
+      <input id="username" name="identifier" class="mt-1 block w-full rounded border px-3 py-2" placeholder="Enter email or phone" required>
+      
       <label class="block text-sm font-medium text-slate-700 mt-4">Password</label>
-      <input id="password" name="password" type="password" class="mt-1 block w-full rounded border px-3 py-2" required>
+      <input id="password" name="password" type="password" class="mt-1 block w-full rounded border px-3 py-2" placeholder="Enter password" required>
+      
       <div class="flex items-center justify-between mt-4">
         <label class="flex items-center gap-2 text-sm"><input id="remember" type="checkbox"> Remember me</label>
-        <a href="forgot-password.html" class="text-sm text-green-600">Forgot?</a>
+        <a href="forgot-password.html" class="text-sm text-green-600 hover:underline">Forgot?</a>
       </div>
+      
       <div id="loginMsg" class="text-sm text-red-600 mt-3" role="status" aria-live="polite"></div>
-      <button class="w-full mt-3 bg-green-600 text-white py-2 rounded" type="submit">Login</button>
-      <p class="text-center text-sm mt-4">Don't have an account? <a href="register.html" class="text-green-600">Create Account</a></p>
+      <button class="w-full mt-3 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition" type="submit">Login</button>
+      <p class="text-center text-sm mt-4">Don't have an account? <a href="register.html" class="text-green-600 hover:underline">Create Account</a></p>
     </form>
-    <div class="mt-4 text-xs text-slate-500 text-center">
-      Demo credentials — Email: <strong>demo@axpress.test</strong> | Phone: <strong>08000000000</strong> — Password: <strong>demo1234</strong>
+    <div class="mt-6 p-4 bg-blue-50 rounded text-xs text-slate-600 text-center">
+      <div class="font-semibold mb-2">Demo Credentials</div>
+      <div>📧 Email: <strong>demo@axpress.test</strong></div>
+      <div>📱 Phone: <strong>08000000000</strong></div>
+      <div>🔑 Password: <strong>demo1234</strong></div>
     </div>
   </div>
   <script src="assets/js/app.js"></script>
@@ -35,16 +41,27 @@
     loadComponent('components/navbar.html','#navbar');
     document.getElementById('loginForm').addEventListener('submit', async function(e){
       e.preventDefault();
+      clearAllErrors();
       const id = document.getElementById('username').value.trim();
       const pw = document.getElementById('password').value;
       const msg = document.getElementById('loginMsg');
       msg.textContent = '';
+      
       try{
+        if (!id) throw new Error('Please enter email or phone');
+        if (!pw) throw new Error('Please enter your password');
+        
         const acct = await validateLogin(id, pw);
-        if(!acct) { msg.textContent = 'Invalid credentials'; return; }
-        setCurrentUser({id:acct.id, name:acct.name, email:acct.email, contact:acct.contact});
-        location.href = 'dashboard.html';
-      }catch(err){ msg.textContent = err.message; }
+        if(!acct) throw new Error('Invalid credentials');
+        
+        Toast.success('Login successful!');
+        setTimeout(() => location.href = 'dashboard.html', 500);
+      }catch(err){ 
+        msg.textContent = err.message;
+        Toast.error(err.message);
+        setFieldError('username', '');
+        setFieldError('password', '');
+      }
     });
   </script>
 </body>
