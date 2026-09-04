@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>History - Axpress</title>
+  <title>Transaction History - Axpress</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -13,8 +13,9 @@
       <h2 class="text-lg font-semibold">Transaction History</h2>
     </div>
     <div class="mb-4 flex gap-2">
-      <input id="q" placeholder="Search" class="border rounded px-3 py-2 flex-1">
+      <input id="q" placeholder="Search transactions" class="border rounded px-3 py-2 flex-1">
       <input id="date" type="date" class="border rounded px-3 py-2">
+      <button id="clearFilters" class="px-3 py-2 bg-slate-200 rounded hover:bg-slate-300">Clear</button>
     </div>
     <div id="txList" class="space-y-3"></div>
   </main>
@@ -22,6 +23,14 @@
   <script>
     document.addEventListener('DOMContentLoaded', ()=>{
       loadComponent('components/navbar.html','#navbar');
+      
+      // Check if user is logged in
+      if (!isLoggedIn()) {
+        Toast.error('Please login first');
+        setTimeout(() => location.href = 'login.html', 1000);
+        return;
+      }
+      
       const all = [
         { id: 'TRF-01', recipient: 'Amina Yusuf', bank: 'GTBank', account: '0123456789', amount: 15000, narration: 'Groceries', date: '2026-07-20 09:24', status: 'successful', type: 'debit' },
         { id: 'TRF-02', recipient: 'Samuel Kola', bank: 'Access Bank', account: '0987654321', amount: 55000, narration: 'Salary', date: '2026-07-18 14:12', status: 'successful', type: 'credit' },
@@ -32,24 +41,53 @@
         { id: 'TRF-07', recipient: 'Kemi Ade', bank: 'FCMB', account: '3344556677', amount: 9500, narration: 'Data bundle', date: '2026-07-02 18:05', status: 'successful', type: 'debit' },
         { id: 'TRF-08', recipient: 'Peter Obi', bank: 'Zenith Bank', account: '7788990011', amount: 45000, narration: 'Utility bill', date: '2026-06-28 09:50', status: 'successful', type: 'debit' },
         { id: 'TRF-09', recipient: 'Event Sponsor', bank: 'Access Bank', account: '4455667788', amount: 150000, narration: 'Project funding', date: '2026-06-25 15:30', status: 'successful', type: 'credit' },
-        { id: 'TRF-10', recipient: 'Linda Chukwu', bank: 'First Bank Of Nigeria', account: '2233445566', amount: 12500, narration: 'Shopping', date: '2026-06-22 20:10', status: 'successful', type: 'debit' }
+        { id: 'TRF-10', recipient: 'Linda Chukwu', bank: 'First Bank Of Nigeria', account: '2233445566', amount: 12500, narration: 'Shopping', date: '2026-06-22 20:10', status: 'successful', type: 'debit' },
       ];
+      
       const list = document.getElementById('txList');
+      
       function render(items){
         list.innerHTML = '';
-        if(!items.length) list.innerHTML = '<div class="text-sm text-slate-500">No transactions found.</div>';
+        if(!items.length) {
+          list.innerHTML = '<div class="text-sm text-slate-500 text-center py-8">No transactions found.</div>';
+          return;
+        }
         items.forEach(t=>{
           const el = document.createElement('div');
-            el.className = 'bg-white p-3 rounded shadow flex justify-between items-center';
-            const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
-            el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
-          el.addEventListener('click', ()=> location.href = 'transaction-details.html?id='+t.id);
+          el.className = 'bg-white p-3 rounded shadow flex justify-between items-center cursor-pointer hover:shadow-md transition';
+          const amountClass = (t.type === 'debit') ? 'text-rose-600' : 'text-green-600';
+          el.innerHTML = `<div><div class="font-medium">${t.recipient}</div><div class="text-sm text-slate-500">${t.bank} • ${t.date}</div></div><div class="${amountClass} font-semibold">₦${Number(t.amount).toLocaleString()}</div>`;
+          el.addEventListener('click', ()=> {
+            sessionStorage.setItem('selectedTransaction', JSON.stringify(t));
+            location.href = 'transaction-details.html?id='+t.id;
+          });
           list.appendChild(el);
         });
       }
+      
       render(all);
-      document.getElementById('q').addEventListener('input', e=> render(all.filter(a=> JSON.stringify(a).toLowerCase().includes(e.target.value.toLowerCase()))));
-      document.getElementById('date').addEventListener('change', e=> render(all.filter(a=> a.date && a.date.includes(e.target.value))));
+      
+      document.getElementById('q').addEventListener('input', e=> {
+        const q=e.target.value.toLowerCase();
+        const dateVal = document.getElementById('date').value;
+        let filtered = all.filter(a=> JSON.stringify(a).toLowerCase().includes(q));
+        if (dateVal) filtered = filtered.filter(a=> a.date && a.date.includes(dateVal));
+        render(filtered);
+      });
+      
+      document.getElementById('date').addEventListener('change', e=> {
+        const q = document.getElementById('q').value.toLowerCase();
+        let filtered = all.filter(a=> a.date && a.date.includes(e.target.value));
+        if (q) filtered = filtered.filter(a=> JSON.stringify(a).toLowerCase().includes(q));
+        render(filtered);
+      });
+      
+      document.getElementById('clearFilters').addEventListener('click', ()=> {
+        document.getElementById('q').value = '';
+        document.getElementById('date').value = '';
+        render(all);
+        Toast.info('Filters cleared');
+      });
     });
   </script>
 </body>
