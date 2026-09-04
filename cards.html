@@ -9,19 +9,40 @@
 <body class="bg-slate-50 min-h-screen">
   <div id="navbar"></div>
   <main class="p-6 max-w-4xl mx-auto">
-    <h2 class="text-lg font-semibold mb-4">Cards</h2>
+    <h2 class="text-lg font-semibold mb-4">Virtual Cards</h2>
     <div id="cardsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
   </main>
   <script src="assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', ()=>{
       loadComponent('components/navbar.html','#navbar');
+      
+      // Check if user is logged in
+      if (!isLoggedIn()) {
+        Toast.error('Please login first');
+        setTimeout(() => location.href = 'login.html', 1000);
+        return;
+      }
+      
       const cards = JSON.parse(localStorage.getItem('ft_cards')||'[]');
       const el = document.getElementById('cardsList');
-      if(!cards.length) el.innerHTML = '<div class="text-sm text-slate-500">No virtual cards.</div>';
+      
+      if(!cards.length) {
+        el.innerHTML = '<div class="text-sm text-slate-500 col-span-2 text-center py-8">No virtual cards yet. <a href="dashboard.html" class="text-green-600 hover:underline">Back to dashboard</a></div>';
+        return;
+      }
+      
       cards.forEach(c=>{
-        const card = document.createElement('div'); card.className='bg-white p-4 rounded shadow';
-        card.innerHTML = `<div class="text-sm text-slate-500">${c.type||'VISA'}</div><div class="font-semibold text-lg">**** **** **** ${String(c.pan).slice(-4)}</div><div class="mt-2 text-sm">Balance: ₦${Number(c.balance||0).toLocaleString()}</div><div class="mt-3 flex gap-2"><button class="px-3 py-1 border rounded">Freeze</button><button class="px-3 py-1 bg-green-600 text-white rounded">Details</button></div>`;
+        const card = document.createElement('div');
+        card.className='bg-white p-4 rounded shadow';
+        card.innerHTML = `
+          <div class="text-sm text-slate-500">${c.type||'VISA'}</div>
+          <div class="font-semibold text-lg mt-2">**** **** **** ${String(c.pan).slice(-4)}</div>
+          <div class="mt-2 text-sm">
+            <div class="text-slate-600">Balance: ₦${Number(c.balance||0).toLocaleString()}</div>
+            <div class="text-slate-600">Exp: ${c.expiry || '--/--'}</div>
+          </div>
+        `;
         el.appendChild(card);
       });
     });
