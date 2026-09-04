@@ -12,14 +12,30 @@
     <h2 class="text-lg font-semibold mb-4">Beneficiaries</h2>
     <div class="mb-4 flex gap-2">
       <input id="bq" placeholder="Search beneficiaries" class="border rounded px-3 py-2 flex-1">
-      <button id="addBtn" class="px-3 py-2 bg-green-600 text-white rounded">Add</button>
+      <button id="addBtn" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add</button>
     </div>
     <div id="bList" class="space-y-3"></div>
+    
+    <!-- Add Beneficiary Form -->
     <div id="addForm" class="hidden bg-white p-4 rounded shadow mt-4">
-      <input id="bn" placeholder="Full name" class="w-full border rounded px-3 py-2 mb-2">
-      <input id="bb" placeholder="Bank" class="w-full border rounded px-3 py-2 mb-2">
-      <input id="ba" placeholder="Account number" class="w-full border rounded px-3 py-2 mb-2">
-      <div class="flex gap-2"><button id="saveB" class="px-3 py-2 bg-green-600 text-white rounded">Save</button><button id="cancelB" class="px-3 py-2 border rounded">Cancel</button></div>
+      <h3 class="font-semibold mb-3">Add Beneficiary</h3>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1">Full Name</label>
+        <input id="bn" placeholder="Full name" class="w-full border rounded px-3 py-2">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1">Bank</label>
+        <input id="bb" placeholder="Bank name" class="w-full border rounded px-3 py-2">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1">Account Number</label>
+        <input id="ba" placeholder="Account number" class="w-full border rounded px-3 py-2">
+      </div>
+      <div id="formMsg" class="text-sm text-red-600 mb-3 hidden"></div>
+      <div class="flex gap-2">
+        <button id="saveB" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Save</button>
+        <button id="cancelB" class="px-3 py-2 border rounded hover:bg-slate-50">Cancel</button>
+      </div>
     </div>
   </main>
   <script src="assets/js/app.js"></script>
@@ -27,28 +43,113 @@
     document.addEventListener('DOMContentLoaded', ()=>{
       loadComponent('components/navbar.html','#navbar');
       const list = document.getElementById('bList');
+      const formMsg = document.getElementById('formMsg');
+      
       const render = ()=>{
         const arr = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]');
-        list.innerHTML=''; if(!arr.length) list.innerHTML='<div class="text-sm text-slate-500">No beneficiaries yet.</div>';
+        list.innerHTML='';
+        if(!arr.length) {
+          list.innerHTML='<div class="text-sm text-slate-500">No beneficiaries yet.</div>';
+          return;
+        }
+        
         arr.forEach((b,i)=>{
           const el = document.createElement('div');
           el.className='bg-white p-3 rounded shadow flex justify-between items-center';
-          el.innerHTML = `<div><div class="font-medium">${b.name}</div><div class="text-sm text-slate-500">${b.bank} • ${b.account}</div></div><div class="flex gap-2"><button class="px-2 py-1 bg-green-600 text-white rounded" data-i="${i}">Quick Transfer</button><button class="px-2 py-1 border rounded" data-del="${i}">Delete</button></div>`;
+          el.innerHTML = `<div><div class="font-medium">${b.name}</div><div class="text-sm text-slate-500">${b.bank} • ${b.account.slice(-4) ? '****' + b.account.slice(-4) : b.account}</div></div><div class="flex gap-2"><button data-i="${i}" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">Use</button><button data-del="${i}" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Delete</button></div>`;
           list.appendChild(el);
         });
       };
+      
       render();
-      document.getElementById('addBtn').addEventListener('click', ()=> document.getElementById('addForm').classList.remove('hidden'));
-      document.getElementById('cancelB').addEventListener('click', ()=> document.getElementById('addForm').classList.add('hidden'));
+      
+      document.getElementById('addBtn').addEventListener('click', ()=> {
+        clearAllErrors();
+        formMsg.classList.add('hidden');
+        document.getElementById('addForm').classList.remove('hidden');
+        document.getElementById('bn').focus();
+      });
+      
+      document.getElementById('cancelB').addEventListener('click', ()=> {
+        clearAllErrors();
+        formMsg.classList.add('hidden');
+        document.getElementById('addForm').classList.add('hidden');
+        document.getElementById('bn').value = '';
+        document.getElementById('bb').value = '';
+        document.getElementById('ba').value = '';
+      });
+      
       document.getElementById('saveB').addEventListener('click', ()=>{
-        const b={name:document.getElementById('bn').value, bank:document.getElementById('bb').value, account:document.getElementById('ba').value};
-        const arr = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]'); arr.push(b); localStorage.setItem('ft_beneficiaries', JSON.stringify(arr)); render(); document.getElementById('addForm').classList.add('hidden');
+        clearAllErrors();
+        formMsg.classList.add('hidden');
+        
+        const name = document.getElementById('bn').value.trim();
+        const bank = document.getElementById('bb').value.trim();
+        const account = document.getElementById('ba').value.trim();
+        
+        try {
+          // Validate
+          const errors = validateBeneficiary({name, bank, account});
+          if (Object.keys(errors).length > 0) {
+            const firstError = Object.values(errors)[0];
+            formMsg.textContent = firstError;
+            formMsg.classList.remove('hidden');
+            
+            // Highlight first error field
+            Object.keys(errors).forEach(key => {
+              const fieldId = key === 'name' ? 'bn' : key === 'bank' ? 'bb' : 'ba';
+              setFieldError(fieldId, errors[key]);
+            });
+            return;
+          }
+          
+          // Add beneficiary
+          addBeneficiary({name, bank, account});
+          
+          Toast.success('Beneficiary added successfully!');
+          document.getElementById('addForm').classList.add('hidden');
+          document.getElementById('bn').value = '';
+          document.getElementById('bb').value = '';
+          document.getElementById('ba').value = '';
+          render();
+        } catch(err) {
+          Toast.error(err.message);
+          formMsg.textContent = err.message;
+          formMsg.classList.remove('hidden');
+        }
       });
+      
       list.addEventListener('click', e=>{
-        if(e.target.dataset.del){ const i = +e.target.dataset.del; const arr = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]'); arr.splice(i,1); localStorage.setItem('ft_beneficiaries', JSON.stringify(arr)); render(); }
-        if(e.target.dataset.i){ const i = +e.target.dataset.i; const b = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]')[i]; if(b) { localStorage.setItem('ft_prefill', JSON.stringify(b)); location.href='transfer.html'; } }
+        if(e.target.dataset.del) {
+          const i = +e.target.dataset.del;
+          if (confirm('Are you sure you want to delete this beneficiary?')) {
+            removeBeneficiary(i);
+            Toast.success('Beneficiary deleted');
+            render();
+          }
+        }
+        if(e.target.dataset.i) {
+          const i = +e.target.dataset.i;
+          const b = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]')[i];
+          if(b) {
+            localStorage.setItem('ft_prefill', JSON.stringify(b));
+            location.href = 'transfer.html';
+          }
+        }
       });
-      document.getElementById('bq').addEventListener('input', e=>{ const q=e.target.value.toLowerCase(); const arr = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]').filter(x=> (x.name||'').toLowerCase().includes(q) || (x.account||'').includes(q)); list.innerHTML=''; arr.forEach((b,i)=>{ const el=document.createElement('div'); el.className='bg-white p-3 rounded shadow flex justify-between items-center'; el.innerHTML = `<div><div class='font-medium'>${b.name}</div><div class='text-sm text-slate-500'>${b.bank} • ${b.account}</div></div><div class='flex gap-2'><button class='px-2 py-1 bg-green-600 text-white rounded' data-i='${i}'>Quick Transfer</button><button class='px-2 py-1 border rounded' data-del='${i}'>Delete</button></div>`; list.appendChild(el); }); });
+      
+      document.getElementById('bq').addEventListener('input', e=>{
+        const q=e.target.value.toLowerCase();
+        const arr = JSON.parse(localStorage.getItem('ft_beneficiaries')||'[]').filter(x=> (x.name||'').toLowerCase().includes(q) || (x.bank||'').toLowerCase().includes(q) || (x.account||'').includes(q));
+        list.innerHTML='';
+        if(!arr.length) list.innerHTML='<div class="text-sm text-slate-500">No beneficiaries found.</div>';
+        arr.forEach((b,i)=>{
+          const el = document.createElement('div');
+          el.className='bg-white p-3 rounded shadow flex justify-between items-center';
+          el.innerHTML = `<div><div class="font-medium">${b.name}</div><div class="text-sm text-slate-500">${b.bank} • ${b.account.slice(-4) ? '****' + b.account.slice(-4) : b.account}</div></div><div class="flex gap-2"><button data-i="${i}" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">Use</button><button data-del="${i}" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Delete</button></div>`;
+          list.appendChild(el);
+        });
+      });
     });
   </script>
 </body>
