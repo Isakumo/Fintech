@@ -9,13 +9,21 @@
 <body class="bg-slate-50 min-h-screen">
   <div id="navbar"></div>
   <main class="p-6 max-w-2xl mx-auto">
-    <button onclick="history.back()" class="text-sm text-green-600 mb-4">← Back</button>
+    <button onclick="history.back()" class="text-sm text-green-600 mb-4 hover:underline">← Back</button>
     <div id="details" class="bg-white p-4 rounded shadow"></div>
   </main>
   <script src="assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', ()=>{
       loadComponent('components/navbar.html','#navbar');
+      
+      // Check if user is logged in
+      if (!isLoggedIn()) {
+        Toast.error('Please login first');
+        setTimeout(() => location.href = 'login.html', 1000);
+        return;
+      }
+      
       const params = new URLSearchParams(location.search);
       const id = params.get('id');
       
@@ -28,7 +36,7 @@
         t = all.find(x=> x.id === id);
       }
       
-      // Final fallback: search hardcoded dashboard transactions (for refresh/direct navigation)
+      // Final fallback: search hardcoded dashboard transactions
       if(!t){
         const defaultTransactions = [
           { id: 'TRF-001', recipient: 'Card Withdrawal', bank: 'Opay', amount: 50000, date: '2026-07-25', type: 'credit', status: 'successful', narration: 'ATM Withdrawal' },
@@ -45,22 +53,30 @@
       
       const el = document.getElementById('details');
       if(!t) { 
-        el.innerHTML = '<div class="text-sm">Transaction not found.</div>'; 
+        el.innerHTML = '<div class="text-sm text-slate-500">Transaction not found.</div>'; 
         return;
       }
+      
+      const statusColor = t.status === 'successful' ? 'text-green-600' : 'text-yellow-600';
       
       el.innerHTML = `
         <h3 class="text-lg font-semibold mb-2">${t.recipient}</h3>
         <div class="text-sm text-slate-600 mb-4">${t.bank} • ${t.date}</div>
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <div class="p-2 bg-slate-50 rounded">Amount</div><div class="p-2">₦${Number(t.amount).toLocaleString()}</div>
-          <div class="p-2 bg-slate-50 rounded">Status</div><div class="p-2">${t.status || 'successful'}</div>
-          <div class="p-2 bg-slate-50 rounded">Reference</div><div class="p-2">${t.id}</div>
-          <div class="p-2 bg-slate-50 rounded">Narration</div><div class="p-2">${t.narration||'-'}</div>
+        <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+          <div class="p-2 bg-slate-50 rounded">Amount</div>
+          <div class="p-2 font-semibold">₦${Number(t.amount).toLocaleString()}</div>
+          <div class="p-2 bg-slate-50 rounded">Status</div>
+          <div class="p-2 ${statusColor} font-semibold capitalize">${t.status || 'successful'}</div>
+          <div class="p-2 bg-slate-50 rounded">Reference</div>
+          <div class="p-2 font-mono text-xs">${t.id}</div>
+          <div class="p-2 bg-slate-50 rounded">Narration</div>
+          <div class="p-2">${t.narration||'-'}</div>
+          <div class="p-2 bg-slate-50 rounded">Type</div>
+          <div class="p-2 capitalize">${t.type || 'transfer'}</div>
         </div>
         <div class="mt-4 flex gap-2">
-          <button onclick="window.print()" class="px-3 py-2 bg-white border rounded">Print Receipt</button>
-          <a href="reciep_printout.html" class="px-3 py-2 bg-green-600 text-white rounded">Open Receipt</a>
+          <button onclick="window.print()" class="px-3 py-2 bg-white border rounded hover:bg-slate-50">Print Receipt</button>
+          <a href="reciep_printout.html" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Open Receipt</a>
         </div>
       `;
     });
